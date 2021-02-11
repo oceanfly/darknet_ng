@@ -306,7 +306,6 @@ int top_color2number(char* color){
     return 9;
 }
 
-
 int bottom_color2number(char* color){
   if (strcmp(color, "White") == 0)
     return 0;
@@ -673,7 +672,7 @@ void draw_detections(image im, char* im_name, detection * dets, int num, float t
   struct json_object * json_obj = json_object_new_object();
   char file_name[64];
   int time_stamp = floor(time_index);
-  snprintf(file_name, sizeof(file_name), "%s-%d.json", im_name, time_stamp);
+  snprintf(file_name, sizeof(file_name), "%s_%d.json", im_name, time_stamp);
   printf("filename = %s\n", file_name);
   FILE * file = fopen(file_name, "w+");
   if (file == 0)
