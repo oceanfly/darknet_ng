@@ -659,11 +659,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             save_image(im, outfile);
         }
         else{
-             
-             char b[2048];
-                         sprintf(b,"/Users/taosun/Documents/GitHub/darknet_ng/out/%s",im_name);//"/home/FENGsl/darknet/data" modified to its own path
-            
-            save_image(im, b);
+            save_image(im, im_name);
             printf("save %s successfully!\n",im_name);
         }
  
