@@ -575,6 +575,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     image **alphabet = load_alphabet();
     network *net = load_network(cfgfile, weightfile, 0);
     set_batch_network(net, 1);
+    printf("filename type = %s\n", &filename[strlen(filename)-3]);
     srand(2222222);
     double time;
     char buff[256];
@@ -584,14 +585,15 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     char* im_name;
 
     while(1){
-        if(filename){
+        if(filename && strcmp(&filename[strlen(filename)-3], "txt") != 0){
+            // the input filename is not a txt file. Then it must be a single image. Else it is a txt file containg batch images 
             strncpy(input, filename, 256);
             image im = load_image_color(input,0,0);
             image sized = letterbox_image(im, net->w, net->h);
-        //image sized = resize_image(im, net->w, net->h);
-        //image sized2 = resize_max(im, net->w);
-        //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
-        //resize_network(net, sized.w, sized.h);
+            //image sized = resize_image(im, net->w, net->h);
+            //image sized2 = resize_max(im, net->w);
+            //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
+            //resize_network(net, sized.w, sized.h);
             layer l = net->layers[net->n-1];
  
  
@@ -617,57 +619,58 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             free_image(im);
             free_image(sized);
             if (filename) break;
-         } 
+        } 
         else {
-            printf("Enter Image Path: ");
-            fflush(stdout);
-            input = fgets(input, 256, stdin);
+            // the imput filename is a txt file. So it is batch processing 
+            // printf("Enter Image Path: ");
+            // fflush(stdout);
+            // input = fgets(input, 256, stdin);
+            strncpy(input, filename, 256);
             if(!input) return;
             strtok(input, "\n");
    
             list *plist = get_paths(input);
             char **paths = (char **)list_to_array(plist);
-             printf("Start Testing!\n");
+            printf("Start Testing!\n");
             int m = plist->size;
             for(i = 0; i < m; ++i){
-             char *path = paths[i];
-             image im = load_image_color(path,0,0);
-             image sized = letterbox_image(im, net->w, net->h);
-        //image sized = resize_image(im, net->w, net->h);
-        //image sized2 = resize_max(im, net->w);
-        //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
-        //resize_network(net, sized.w, sized.h);
-        layer l = net->layers[net->n-1];
- 
- 
-        float *X = sized.data;
-        time=what_time_is_it_now();
-        network_predict(net, X);
+                char *path = paths[i];
+                image im = load_image_color(path,0,0);
+                image sized = letterbox_image(im, net->w, net->h);
+                //image sized = resize_image(im, net->w, net->h);
+                //image sized2 = resize_max(im, net->w);
+                //image sized = crop_image(sized2, -((net->w - sized2.w)/2), -((net->h - sized2.h)/2), net->w, net->h);
+                //resize_network(net, sized.w, sized.h);
+                layer l = net->layers[net->n-1];
+                float *X = sized.data;
+                time=what_time_is_it_now();
+                network_predict(net, X);
 
-        im_name = GetFilename(path);
-        printf("image name: %s\n", im_name);
-        printf("Try Very Hard:");
-        printf("%s: Predicted in %f seconds.\n", path, what_time_is_it_now()-time);
-        int nboxes = 0;
-        detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
-        //printf("%d\n", nboxes);
-        //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
-        if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
-        draw_detections(im, im_name, dets, nboxes, thresh, names, alphabet, l.classes, 0.0);
-        free_detections(dets, nboxes);
-        if(outfile){
-            save_image(im, outfile);
-        }
-        else{
-            save_image(im, im_name);
-            printf("save %s successfully!\n",im_name);
-        }
+                im_name = GetFilename(path);
+                printf("image name: %s\n", im_name);
+                printf("Try Very Hard:");
+                printf("%s: Predicted in %f seconds.\n", path, what_time_is_it_now()-time);
+                int nboxes = 0;
+                detection *dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes);
+                //printf("%d\n", nboxes);
+                //if (nms) do_nms_obj(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+                if (nms) do_nms_sort(dets, nboxes, l.classes, nms);
+                draw_detections(im, im_name, dets, nboxes, thresh, names, alphabet, l.classes, 0.0);
+                free_detections(dets, nboxes);
+                if(outfile){
+                    save_image(im, outfile);
+                }
+                else{
+                    save_image(im, im_name);
+                    printf("save %s successfully!\n",im_name);
+                }
  
-        free_image(im);
-        free_image(sized);
-        if (filename) break;
+                free_image(im);
+                free_image(sized);
+                // if (filename) break;
+            }
+            if (i == m) break;
         }
-      }
     }
 }
 
