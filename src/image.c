@@ -401,7 +401,7 @@ int get_most_color_index(image im, int left, int right, int top, int bot,
   mean_r = sum_r / count;
   mean_g = sum_g / count;
   mean_b = sum_b / count; 
-  printf("mean_r = %f, mean_g = %f, mean_b = %f \n ", mean_r,mean_g,mean_b); 
+  // printf("mean_r = %f, mean_g = %f, mean_b = %f \n ", mean_r,mean_g,mean_b); 
 
   int color_max_count = 0;
   int color_max_index = 0;
@@ -757,7 +757,7 @@ void draw_detections(image im, char* im_name, detection * dets, int num, float t
     int obj_idx = obj_index[cur_index];
     
     // if (i == 0) { // testing on a single person of interest
-      struct json_object * json_person = draw_person(im, alphabet, dets[obj_idx]);
+    struct json_object * json_person = draw_person(im, alphabet, dets[obj_idx]);
     // } // testing on single person of interest 
 
     box person_box = dets[obj_idx].bbox;
@@ -787,6 +787,14 @@ void draw_detections(image im, char* im_name, detection * dets, int num, float t
                         prev_person_mov[assigned_prev_index][1]));
     struct json_object * json_speed= json_object_new_string(speed_object);
     json_object_object_add(json_person, "speed", json_speed);
+
+    // Add size for person 
+    char size_object[64];
+    int size = (bot - top) * (right - left);
+    sprintf(size_object, "%d", size);
+    struct json_object * json_size= json_object_new_string(size_object);
+    json_object_object_add(json_person, "size", json_size);
+    
     json_object_object_add(json_obj, person_object, json_person);
 
     char person_label[64];
